@@ -3,6 +3,7 @@ INCLUDE "gbhw.inc"
 
 SPRITE_RAM EQU $C000
 SPRITE_RAM_SIZE EQU 160
+OAM_DMA_TRANSFER_FUNC EQU $FF80
 
 SECTION	"Vblank",HOME[$0040]
 	nop
@@ -52,6 +53,7 @@ init:
 
 	call mem_SetVRAM
 	call InitSpriteRAM
+	call MoveOAMFuncToHRAM
 
 	ld a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGOFF|LCDCF_OBJ16|LCDCF_OBJON
 	ld [rLCDC], a
@@ -81,7 +83,7 @@ StopLCD:
 	ret
 
 InitSpriteRAM:
-	ld de, 160
+	ld de, SPRITE_RAM_SIZE
 	ld bc, SPRITE_RAM
 .loop:
 	ld a, $00
@@ -120,10 +122,13 @@ VBlank:
 	ld a, 0
 	ld [de], a
 
-	call CopyOAMRam
+	call OAM_DMA_TRANSFER_FUNC
 	
 	reti
 
+; SIZE: 10 bytes - If function changes we must update size for the HRAM
+; copy routine!
+COPY_OAM_FUNC_SIZE EQU 10
 CopyOAMRam:
 	ld a, $c0
 	ld [rDMA], a
@@ -132,4 +137,9 @@ CopyOAMRam:
 	dec a
 	jr nz, .wait
 	ret
-;*** End Of File ***
+
+MoveOAMFuncToHRAM:
+	ld hl, CopyOAMRam
+	ld de, OAM_DMA_TRANSFER_FUNC
+	ld bc, COPY_OAM_FUNC_SIZE
+	call mem_Copy

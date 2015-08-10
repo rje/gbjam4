@@ -4,6 +4,7 @@ ASM=rgbasm
 LINK=rgblink
 FIX=rgbfix
 EMU=bgb
+#EMU=no$$gmb
 
 GAME=rjegbjam
 
@@ -18,7 +19,7 @@ run:
 
 build: $(OBJS)
 	$(LINK) -m $(GAME).map -n $(GAME).sym -p 0 -o $(GAME).gb $(OBJS)
-	$(FIX) -v $(GAME).gb
+	$(FIX) -v -p 0 -i rgj4 -k re -m 0 -n 0 -r 0 -t gbjam4 $(GAME).gb
 
 %.o: %.asm
 	$(ASM) -o $@ $<
