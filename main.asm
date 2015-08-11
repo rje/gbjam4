@@ -54,6 +54,7 @@ init:
 	call mem_SetVRAM
 	call InitSpriteRAM
 	call MoveOAMFuncToHRAM
+	call InitPlayer
 
 	ld a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGOFF|LCDCF_OBJ16|LCDCF_OBJON
 	ld [rLCDC], a
@@ -63,6 +64,13 @@ init:
 
 	ei
 wait:
+	ld a, [player_x]
+	inc a
+	ld [player_x], a
+	ld hl, player
+	push hl
+	call UpdateSprite
+	pop hl
 	halt
 	nop
 	jr wait
@@ -96,39 +104,10 @@ InitSpriteRAM:
 	ret
 
 VBlank:
-	ld de, $c000
-	ld a, 80
-	ld [de], a
-	inc de
-	ld a, 76
-	ld [de], a
-	inc de
-	ld a, 0
-	ld [de], a
-	inc de
-	ld a, 0
-	ld [de], a
-
-	ld de, $c004
-	ld a, 80
-	ld [de], a
-	inc de
-	ld a, 84
-	ld [de], a
-	inc de
-	ld a, 2
-	ld [de], a
-	inc de
-	ld a, 0
-	ld [de], a
-
 	call OAM_DMA_TRANSFER_FUNC
 	
 	reti
 
-; SIZE: 10 bytes - If function changes we must update size for the HRAM
-; copy routine!
-COPY_OAM_FUNC_SIZE EQU 10
 CopyOAMRam:
 	ld a, $c0
 	ld [rDMA], a
@@ -137,9 +116,76 @@ CopyOAMRam:
 	dec a
 	jr nz, .wait
 	ret
+CopyOAMRamEnd:
 
 MoveOAMFuncToHRAM:
 	ld hl, CopyOAMRam
 	ld de, OAM_DMA_TRANSFER_FUNC
-	ld bc, COPY_OAM_FUNC_SIZE
+	ld bc, CopyOAMRamEnd-CopyOAMRam
 	call mem_Copy
+
+InitPlayer:
+	ld a, 80
+	ld [player_x], a
+	ld [player_y], a
+	ld a, $00
+	ld [player_left_sprite], a
+	ld a, $04
+	ld [player_right_sprite], a
+	ret
+
+; 1 parameter on stack - addr of sprite to update
+; (see Sprite RAM section starting at $C0A2)
+UpdateSprite:
+	ld hl, [SP+$02]
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	push de
+	pop hl
+	ld b, [hl] ; sprite x
+	inc hl
+	ld c, [hl] ; sprite y
+	inc hl
+	ld d, [hl] ; left sprite
+	inc hl
+	ld e, [hl] ; right sprite
+
+	ld h, $c0
+	ld l, d
+	ld a, c ; load y
+	sub 16 ; place origin at bottom
+	ld c, a
+	ld [hl], c
+
+	inc hl
+	ld a, b ; load x
+	sub 8 ; place origin in horizontal middle
+	ld [hl], a
+	
+	inc hl
+	ld a, $00 ; FIXME: grab animation data
+	ld [hl], a
+
+	ld l, e
+	ld [hl], c
+	
+	inc hl
+	ld [hl], b
+
+	inc hl
+	ld a, $02 ; FIXME: grab animation data
+	ld [hl], a
+
+	ret
+
+SECTION "Sprite RAM", WRAM0[$C0A2]
+player:
+player_x:
+	ds 1
+player_y:
+	ds 1
+player_left_sprite:
+	ds 1
+player_right_sprite:
+	ds 1
