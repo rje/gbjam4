@@ -28,6 +28,8 @@ SECTION	"Start",HOME[$0100]
 	ROM_HEADER	ROM_NOMBC, ROM_SIZE_32KBYTE, RAM_SIZE_0KBYTE
 INCLUDE "memory.inc"
 INCLUDE "characters.z80"
+INCLUDE "dungeon_tiles.z80"
+INCLUDE "test_room_0.z80"
 
 begin:
 	nop
@@ -36,6 +38,7 @@ begin:
 init:
 	ld a, %11100100
 	ld [rBGP], a
+	ld a, %11010000
 	ldh [rOBP0], a
 	ldh [rOBP1], a
 	ld a, 0
@@ -47,16 +50,22 @@ init:
 	ld de, _VRAM
 	ld bc, 8 * 4 * 16 ; 8 chars * 4 tiles per char (16x16) * 16 bytes per tile
 	call mem_Copy
-	ld a, 32
-	ld hl, _SCRN0
-	ld bc, SCRN_VX_B * SCRN_VY_B
 
-	call mem_SetVRAM
+	ld hl, dungeon_tiles
+	ld de, $8800
+	ld bc, 50 * 16
+	call mem_Copy
+
+	ld hl, test_room_0
+	ld de, _SCRN0
+	ld bc, $400
+	call mem_CopyVRAM
+
 	call InitSpriteRAM
 	call MoveOAMFuncToHRAM
 	call InitPlayer
 
-	ld a, LCDCF_ON|LCDCF_BG8000|LCDCF_BG9800|LCDCF_BGOFF|LCDCF_OBJ16|LCDCF_OBJON
+	ld a, LCDCF_ON|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
 	ld [rLCDC], a
 
 	ld a, IEF_TIMER|IEF_LCDC|IEF_VBLANK
@@ -64,9 +73,8 @@ init:
 
 	ei
 wait:
-	ld a, [player_x]
-	inc a
-	ld [player_x], a
+	call ReadJoypad
+	call HandlePlayerMovement
 	ld hl, player
 	push hl
 	call UpdateSprite
@@ -74,6 +82,69 @@ wait:
 	halt
 	nop
 	jr wait
+
+HandlePlayerMovement:
+	ld a, [joypad]
+	ld d, a
+	ld b, PADF_LEFT
+	and b
+	jr z,.noleft
+	ld a, [player_x]
+	dec a
+	ld [player_x], a
+.noleft:
+	ld a, d
+	ld b, PADF_RIGHT
+	and b
+	jr z,.noright
+	ld a, [player_x]
+	inc a
+	ld [player_x], a
+.noright
+	ld a, d
+	ld b, PADF_UP
+	and b
+	jr z,.noup
+	ld a, [player_y]
+	dec a
+	ld [player_y], a
+.noup
+	ld a, d
+	ld b, PADF_DOWN
+	and b
+	jr z,.nodown
+	ld a, [player_y]
+	inc a
+	ld [player_y], a
+.nodown
+	ret
+
+ReadJoypad:
+	ld a, $20
+	ld [$FF00], a
+	ld a, [$FF00]
+	ld a, [$FF00]
+	cpl
+	and $0F
+	swap a
+	ld b, a
+	ld a, $10
+	ld [$FF00], a
+	ld a, [$FF00]
+	ld a, [$FF00]
+	ld a, [$FF00]
+	ld a, [$FF00]
+	ld a, [$FF00]
+	ld a, [$FF00]
+	cpl
+	and $0F
+	or b
+	ld d, a
+	ld a, [joypad]
+	ld [joypad_prev], a
+	ld a, d
+	ld [joypad], a
+	ret
 
 StopLCD:
 	ld a, [rLCDC]
@@ -188,4 +259,10 @@ player_y:
 player_left_sprite:
 	ds 1
 player_right_sprite:
+	ds 1
+
+SECTION "Variable RAM", WRAM0[$C200]
+joypad:
+	ds 1
+joypad_prev:
 	ds 1
