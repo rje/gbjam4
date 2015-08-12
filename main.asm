@@ -2,9 +2,13 @@
 INCLUDE "gbhw.inc"
 INCLUDE "load1.inc"
 
-SPRITE_RAM EQU $C000
-SPRITE_RAM_SIZE EQU 160
-OAM_DMA_TRANSFER_FUNC EQU $FF80
+DIR_NORTH EQU 0
+DIR_SOUTH EQU 1
+DIR_EAST EQU 2
+DIR_WEST EQU 3
+
+SECTION "OAM Stuff",HOME[$0000]
+INCLUDE "oam.asm"
 
 SECTION	"Vblank",HOME[$0040]
 	nop
@@ -34,6 +38,25 @@ begin:
 	di
 	ld sp, $ffff
 init:
+	call InitSystem
+	ei
+wait:
+	call FrameUpdate
+	halt
+	nop
+	jr wait
+
+
+FrameUpdate:
+	call ReadJoypad
+	call HandlePlayerMovement
+	ld hl, player
+	push hl
+	call UpdateSprite
+	pop hl
+	ret
+
+InitSystem:
 	ld a, %11100100
 	ld [rBGP], a
 	ld a, %11010000
@@ -62,86 +85,14 @@ init:
 	call InitSpriteRAM
 	call MoveOAMFuncToHRAM
 	call InitPlayer
+	ld8i frame_counter, 0
+	ld8i frame_index, 0
 
 	ld a, LCDCF_ON|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
 	ld [rLCDC], a
 
 	ld a, IEF_TIMER|IEF_LCDC|IEF_VBLANK
 	ld [rIE], a
-
-	ei
-wait:
-	call ReadJoypad
-	call HandlePlayerMovement
-	ld hl, player
-	push hl
-	call UpdateSprite
-	pop hl
-	halt
-	nop
-	jr wait
-
-HandlePlayerMovement:
-	ld a, [joypad]
-	ld d, a
-	ld b, PADF_LEFT
-	and b
-	jr z,.noleft
-	ld a, [player_x]
-	dec a
-	ld [player_x], a
-.noleft:
-	ld a, d
-	ld b, PADF_RIGHT
-	and b
-	jr z,.noright
-	ld a, [player_x]
-	inc a
-	ld [player_x], a
-.noright
-	ld a, d
-	ld b, PADF_UP
-	and b
-	jr z,.noup
-	ld a, [player_y]
-	dec a
-	ld [player_y], a
-.noup
-	ld a, d
-	ld b, PADF_DOWN
-	and b
-	jr z,.nodown
-	ld a, [player_y]
-	inc a
-	ld [player_y], a
-.nodown
-	ret
-
-ReadJoypad:
-	ld a, $20
-	ld [$FF00], a
-	ld a, [$FF00]
-	ld a, [$FF00]
-	cpl
-	and $0F
-	swap a
-	ld b, a
-	ld a, $10
-	ld [$FF00], a
-	ld a, [$FF00]
-	ld a, [$FF00]
-	ld a, [$FF00]
-	ld a, [$FF00]
-	ld a, [$FF00]
-	ld a, [$FF00]
-	cpl
-	and $0F
-	or b
-	ld d, a
-	ld a, [joypad]
-	ld [joypad_prev], a
-	ld a, d
-	ld [joypad], a
 	ret
 
 StopLCD:
@@ -159,100 +110,15 @@ StopLCD:
 
 	ret
 
-InitSpriteRAM:
-	ld de, SPRITE_RAM_SIZE
-	ld bc, SPRITE_RAM
-.loop:
-	ld a, $00
-	ld [bc], a
-	inc bc
-	dec de
-	ld a, d
-	or e
-	jp nz,.loop
-	ret
-
 VBlank:
+	call UpdateFrameCounter
 	call OAM_DMA_TRANSFER_FUNC
 	
 	reti
 
-CopyOAMRam:
-	ld a, $c0
-	ld [rDMA], a
-	ld a, $28
-.wait
-	dec a
-	jr nz, .wait
-	ret
-CopyOAMRamEnd:
-
-MoveOAMFuncToHRAM:
-	ld hl, CopyOAMRam
-	ld de, OAM_DMA_TRANSFER_FUNC
-	ld bc, CopyOAMRamEnd-CopyOAMRam
-	call mem_Copy
-
-InitPlayer:
-	ld a, 80
-	ld [player_x], a
-	ld [player_y], a
-	ld a, $00
-	ld [player_left_sprite], a
-	ld a, $04
-	ld [player_right_sprite], a
-	ld a, $00
-	ld [player_direction], a
-	ld16i player_animation, player_walk
-	ld [hl], e
-	inc hl
-	ld [hl], d
-	ret
-
-; 1 parameter on stack - addr of sprite to update
-; (see Sprite RAM section starting at $C0A2)
-UpdateSprite:
-	ld hl, [SP+$02]
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	push de
-	pop hl
-	ld b, [hl] ; sprite x
-	inc hl
-	ld c, [hl] ; sprite y
-	inc hl
-	ld d, [hl] ; left sprite
-	inc hl
-	ld e, [hl] ; right sprite
-
-	ld h, $c0
-	ld l, d
-	ld a, c ; load y
-	sub 16 ; place origin at bottom
-	ld c, a
-	ld [hl], c
-
-	inc hl
-	ld a, b ; load x
-	sub 8 ; place origin in horizontal middle
-	ld [hl], a
-	
-	inc hl
-	ld a, $00 ; FIXME: grab animation data
-	ld [hl], a
-
-	ld l, e
-	ld [hl], c
-	
-	inc hl
-	ld [hl], b
-
-	inc hl
-	ld a, $02 ; FIXME: grab animation data
-	ld [hl], a
-
-	ret
+INCLUDE "sprite_functions.asm"
+INCLUDE "player.asm"
+INCLUDE "joypad.asm"
 
 SECTION "Sprite RAM", WRAM0[$C0A2]
 player:
@@ -266,7 +132,6 @@ player_right_sprite:
 	ds 1
 player_direction:
 	ds 1
-	ds 1 ;; padding
 player_animation:
 	ds 2
 
@@ -275,46 +140,29 @@ joypad:
 	ds 1
 joypad_prev:
 	ds 1
+frame_counter:
+	ds 1
+frame_index:
+	ds 1
+update_sprite_x:
+	ds 1
+update_sprite_y:
+	ds 1
+update_sprite_left_sprite:
+	ds 2
+update_sprite_right_sprite:
+	ds 2
+update_sprite_direction:
+	ds 1
+update_sprite_animation:
+	ds 2
+update_sprite_left_tile:
+	ds 1
+update_sprite_right_tile:
+	ds 1
 
 SECTION "Asset Data", HOME[$4000]
-;; animation
-;;		north anim data ptr
-;;		south anim data ptr
-;; 		east anim data ptr
-;;		west anim data ptr
-;; animation data
-;; 		frame count
-;; 		frame 0
-;; 		frame 1
-;; 		frame n
-animations:
-player_walk:
-	dw player_walk_north
-	dw player_walk_south
-	dw player_walk_east
-	dw player_walk_west
-
-animation_data:
-player_walk_north:
-	db 2
-	db $08
-	db $0C
-
-player_walk_south:
-	db 2
-	db $00
-	db $04
-
-player_walk_east:
-	db 2
-	db $10
-	db $14
-
-player_walk_west:
-	db 2
-	db $18
-	db $1C
-
+INCLUDE "animations.asm"
 INCLUDE "characters.z80"
 INCLUDE "dungeon_tiles.z80"
 INCLUDE "test_room_0.z80"
