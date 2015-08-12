@@ -27,9 +27,6 @@ SECTION	"Start",HOME[$0100]
 
 	ROM_HEADER	ROM_NOMBC, ROM_SIZE_32KBYTE, RAM_SIZE_0KBYTE
 INCLUDE "memory.inc"
-INCLUDE "characters.z80"
-INCLUDE "dungeon_tiles.z80"
-INCLUDE "test_room_0.z80"
 
 begin:
 	nop
@@ -53,7 +50,7 @@ init:
 
 	ld hl, dungeon_tiles
 	ld de, $8800
-	ld bc, 50 * 16
+	ld bc, 54 * 16
 	call mem_Copy
 
 	ld hl, test_room_0
@@ -203,6 +200,13 @@ InitPlayer:
 	ld [player_left_sprite], a
 	ld a, $04
 	ld [player_right_sprite], a
+	ld a, $00
+	ld [player_direction], a
+	ld hl, player_animation
+	ld de, player_walk
+	ld [hl], e
+	inc hl
+	ld [hl], d
 	ret
 
 ; 1 parameter on stack - addr of sprite to update
@@ -260,9 +264,57 @@ player_left_sprite:
 	ds 1
 player_right_sprite:
 	ds 1
+player_direction:
+	ds 1
+	ds 1 ;; padding
+player_animation:
+	ds 2
 
 SECTION "Variable RAM", WRAM0[$C200]
 joypad:
 	ds 1
 joypad_prev:
 	ds 1
+
+SECTION "Asset Data", HOME[$4000]
+;; animation
+;;		north anim data ptr
+;;		south anim data ptr
+;; 		east anim data ptr
+;;		west anim data ptr
+;; animation data
+;; 		frame count
+;; 		frame 0
+;; 		frame 1
+;; 		frame n
+animations:
+player_walk:
+	dw player_walk_north
+	dw player_walk_south
+	dw player_walk_east
+	dw player_walk_west
+
+animation_data:
+player_walk_north:
+	db 2
+	db $08
+	db $0C
+
+player_walk_south:
+	db 2
+	db $00
+	db $04
+
+player_walk_east:
+	db 2
+	db $10
+	db $14
+
+player_walk_west:
+	db 2
+	db $18
+	db $1C
+
+INCLUDE "characters.z80"
+INCLUDE "dungeon_tiles.z80"
+INCLUDE "test_room_0.z80"
