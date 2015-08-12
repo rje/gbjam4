@@ -1,5 +1,6 @@
 
 INCLUDE "gbhw.inc"
+INCLUDE "load1.inc"
 
 SPRITE_RAM EQU $C000
 SPRITE_RAM_SIZE EQU 160
@@ -202,8 +203,7 @@ InitPlayer:
 	ld [player_right_sprite], a
 	ld a, $00
 	ld [player_direction], a
-	ld hl, player_animation
-	ld de, player_walk
+	ld16i player_animation, player_walk
 	ld [hl], e
 	inc hl
 	ld [hl], d
