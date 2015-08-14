@@ -79,7 +79,7 @@ InitSystem:
 
 	ld hl, test_room_0
 	ld de, _SCRN0
-	ld bc, $400
+	ld bc, 32 * 18
 	call mem_CopyVRAM
 
 	call InitSpriteRAM
