@@ -15,46 +15,125 @@ InitPlayer:
 	ld [hl], d
 	ret
 
+; b - x pos
+; c - y pos
+; hl - base addr
+;
+; hl - return value, offset addr to tile
+CalculateTileAddr:
+	push af
+	push de
+	srl b
+	srl b
+	srl b
+	srl c
+	srl c
+	srl c
+	ld d, 0
+	ld e, b
+	add hl, de
+.loop
+	ld a, c
+	cp 0
+	jr z,.done
+
+	dec c
+	ld e, 32
+	add hl, de
+	jp .loop
+
+.done	
+	pop de
+	pop af
+	ret
+
 HandlePlayerMovement:
 	ld a, [joypad]
-	ld d, a
 	ld b, PADF_LEFT
 	and b
 	jr z,.noleft
+	ld8i player_direction, DIR_WEST
+	ld a, [player_x]
+	dec a
+	sub 10
+	ld b, a
+	ld a, [player_y]
+	sub 20
+	ld c, a
+	ld hl, test_room_0PLN1
+	call CalculateTileAddr
+	ld a, [hl]
+	cp 0
+	jp nz, .noleft
 	ld a, [player_x]
 	dec a
 	ld [player_x], a
-	ld8i player_direction, DIR_WEST
 	jp .done
 .noleft:
-	ld a, d
+	ld a, [joypad]
 	ld b, PADF_RIGHT
 	and b
 	jr z,.noright
+	ld8i player_direction, DIR_EAST
+	ld a, [player_x]
+	inc a
+	sub 4
+	ld b, a
+	ld a, [player_y]
+	sub 20
+	ld c, a
+	ld hl, test_room_0PLN1
+	call CalculateTileAddr
+	ld a, [hl]
+	cp 0
+	jp nz, .noright
 	ld a, [player_x]
 	inc a
 	ld [player_x], a
-	ld8i player_direction, DIR_EAST
 	jp .done
 .noright
-	ld a, d
+	ld a, [joypad]
 	ld b, PADF_UP
 	and b
 	jr z,.noup
+	ld8i player_direction, DIR_NORTH
+	ld a, [player_x]
+	sub 4
+	ld b, a
+	ld a, [player_y]
+	dec a
+	sub 20
+	ld c, a
+	ld hl, test_room_0PLN1
+	call CalculateTileAddr
+	ld a, [hl]
+	cp 0
+	jp nz, .noup
 	ld a, [player_y]
 	dec a
 	ld [player_y], a
-	ld8i player_direction, DIR_NORTH
 	jp .done
 .noup
-	ld a, d
+	ld a, [joypad]
 	ld b, PADF_DOWN
 	and b
 	jr z,.nodown
+	ld8i player_direction, DIR_SOUTH
+	ld a, [player_x]
+	sub 4
+	ld b, a
+	ld a, [player_y]
+	inc a
+	sub 20
+	ld c, a
+	ld hl, test_room_0PLN1
+	call CalculateTileAddr
+	ld a, [hl]
+	cp 0
+	jp nz, .nodown
 	ld a, [player_y]
 	inc a
 	ld [player_y], a
-	ld8i player_direction, DIR_SOUTH
 	jp .done
 .nodown
 .done

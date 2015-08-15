@@ -74,7 +74,7 @@ InitSystem:
 
 	ld hl, dungeon_tiles
 	ld de, $8800
-	ld bc, 54 * 16
+	ld bc, 67 * 16
 	call mem_Copy
 
 	ld hl, test_room_0
