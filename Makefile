@@ -24,6 +24,9 @@ build: $(OBJS)
 %.o: %.asm
 	$(ASM) -o $@ $<
 
+%.o: %.z80
+	$(ASM) -o $@ $<
+
 clean:
 	rm -f $(OBJS)
 	rm -f $(GAME).gb
