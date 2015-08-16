@@ -10,7 +10,7 @@
 ;   Compression          : None.
 ;   Counter              : None.
 ;   Tile size            : 8 x 8
-;   Tiles                : 0 to 66
+;   Tiles                : 0 to 86
 ;
 ;   Palette colors       : None.
 ;   SGB Palette          : None.
@@ -156,5 +156,45 @@ DB $98,$EF,$98,$EF,$98,$EF,$9F,$EF
 DB $BF,$D0,$F0,$AF,$E0,$DF,$FF,$FF
 DB $19,$F7,$19,$F7,$19,$F7,$F9,$F7
 DB $FD,$0B,$0F,$F5,$07,$FB,$FF,$FF
+DB $FF,$80,$FF,$80,$A8,$D7,$CD,$B2
+DB $C7,$B9,$D7,$AB,$A7,$DB,$D3,$AD
+DB $C3,$BD,$C7,$BB,$E3,$9D,$F5,$AA
+DB $E2,$9D,$FF,$83,$FF,$FF,$FF,$FF
+DB $FF,$01,$FF,$01,$15,$EB,$B3,$4D
+DB $E3,$9D,$EB,$D5,$E5,$DB,$CB,$B5
+DB $C3,$BD,$E3,$DD,$C7,$B9,$AF,$55
+DB $47,$B9,$FF,$C1,$FF,$FF,$FF,$FF
+DB $FF,$80,$FF,$80,$80,$FF,$A0,$FF
+DB $A0,$DF,$81,$FF,$83,$FF,$83,$FF
+DB $83,$FD,$81,$FF,$81,$FF,$81,$FE
+DB $A0,$FF,$A0,$DF,$80,$FF,$FF,$FF
+DB $FF,$01,$FF,$01,$01,$FF,$05,$FF
+DB $05,$FB,$81,$FF,$C1,$FF,$C1,$FF
+DB $C1,$BF,$81,$FF,$81,$FF,$81,$7F
+DB $05,$FF,$05,$FB,$01,$FF,$FF,$FF
+DB $FF,$FF,$80,$FF,$A0,$DF,$A0,$FF
+DB $81,$FE,$81,$FF,$81,$FF,$83,$FD
+DB $83,$FF,$83,$FF,$81,$FF,$A0,$DF
+DB $A0,$FF,$80,$FF,$FF,$80,$FF,$80
+DB $FF,$FF,$01,$FF,$05,$FB,$05,$FF
+DB $81,$7F,$81,$FF,$81,$FF,$C1,$BF
+DB $C1,$FF,$C1,$FF,$81,$FF,$05,$FB
+DB $05,$FF,$01,$FF,$FF,$01,$FF,$01
+DB $FF,$FF,$C0,$3F,$D8,$37,$C0,$3F
+DB $C0,$3F,$C0,$3F,$C3,$3F,$C7,$3F
+DB $C7,$3F,$C3,$3F,$C0,$3F,$C0,$3F
+DB $C0,$3F,$D8,$37,$C0,$3F,$FF,$FF
+DB $FF,$FF,$01,$FF,$0D,$FB,$01,$FF
+DB $01,$FF,$01,$FF,$81,$7F,$F1,$EF
+DB $F1,$EF,$81,$7F,$01,$FF,$01,$FF
+DB $01,$FF,$0D,$FB,$01,$FF,$FF,$FF
+DB $FF,$FF,$03,$FC,$1B,$EC,$03,$FC
+DB $03,$FC,$03,$FC,$C3,$FC,$E3,$FC
+DB $E3,$FC,$C3,$FC,$03,$FC,$03,$FC
+DB $03,$FC,$1B,$EC,$03,$FC,$FF,$FF
+DB $FF,$FF,$80,$FF,$B0,$DF,$80,$FF
+DB $80,$FF,$80,$FF,$81,$FE,$8F,$F7
+DB $8F,$F7,$81,$FE,$80,$FF,$80,$FF
+DB $80,$FF,$B0,$DF,$80,$FF,$FF,$FF
 
 ; End of DUNGEON_TILES.Z80

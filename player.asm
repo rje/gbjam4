@@ -1,7 +1,8 @@
 
 InitPlayer:
-	ld a, 80
+	ld a, 88
 	ld [player_x], a
+	ld a, 100
 	ld [player_y], a
 	ld a, $00
 	ld [player_left_sprite], a
@@ -38,7 +39,7 @@ CalculateTileAddr:
 	jr z,.done
 
 	dec c
-	ld e, 32
+	ld e, 20
 	add hl, de
 	jp .loop
 
@@ -55,12 +56,12 @@ HandlePlayerMovement:
 	ld8i player_direction, DIR_WEST
 	ld a, [player_x]
 	dec a
-	sub 10
+	sub 12
 	ld b, a
 	ld a, [player_y]
 	sub 20
 	ld c, a
-	ld hl, test_room_0PLN1
+	ld16 hl, current_collision
 	call CalculateTileAddr
 	ld a, [hl]
 	cp 0
@@ -82,7 +83,7 @@ HandlePlayerMovement:
 	ld a, [player_y]
 	sub 20
 	ld c, a
-	ld hl, test_room_0PLN1
+	ld16 hl, current_collision
 	call CalculateTileAddr
 	ld a, [hl]
 	cp 0
@@ -98,13 +99,13 @@ HandlePlayerMovement:
 	jr z,.noup
 	ld8i player_direction, DIR_NORTH
 	ld a, [player_x]
-	sub 4
+	sub 8
 	ld b, a
 	ld a, [player_y]
 	dec a
 	sub 20
 	ld c, a
-	ld hl, test_room_0PLN1
+	ld16 hl, current_collision
 	call CalculateTileAddr
 	ld a, [hl]
 	cp 0
@@ -120,13 +121,13 @@ HandlePlayerMovement:
 	jr z,.nodown
 	ld8i player_direction, DIR_SOUTH
 	ld a, [player_x]
-	sub 4
+	sub 8
 	ld b, a
 	ld a, [player_y]
 	inc a
 	sub 20
 	ld c, a
-	ld hl, test_room_0PLN1
+	ld16 hl, current_collision
 	call CalculateTileAddr
 	ld a, [hl]
 	cp 0
@@ -137,4 +138,42 @@ HandlePlayerMovement:
 	jp .done
 .nodown
 .done
+
+	call player_CheckForTransition
+	ret
+
+player_CheckForTransition:
+	ld a, [player_y]
+	cp 22
+	jp nc,.nonorthtrans
+	call player_DoTransition
+	ret
+.nonorthtrans
+	cp 146
+	jp c,.nosouthtrans
+	call player_DoTransition
+	ret
+.nosouthtrans
+	ld a, [player_x]
+	cp 160
+	jp c, .noeasttrans
+	call player_DoTransition
+	ret
+.noeasttrans
+	cp 8
+	jp nc, .nowesttrans
+	call player_DoTransition
+	ret
+.nowesttrans
+	ret
+
+player_DoTransition:
+	di
+	call StopLCD
+	call dungeon_MoveToNextRoom
+
+	ld a, LCDCF_ON|LCDCF_BGON|LCDCF_OBJ16|LCDCF_OBJON
+	ld [rLCDC], a
+	
+	ei
 	ret

@@ -72,15 +72,13 @@ InitSystem:
 	ld bc, 8 * 4 * 16 ; 8 chars * 4 tiles per char (16x16) * 16 bytes per tile
 	call mem_Copy
 
-	ld hl, dungeon_tiles
-	ld de, $8800
-	ld bc, 67 * 16
-	call mem_Copy
+	;ld hl, dungeon_0_room_2
+	;ld de, _SCRN0
+	;ld bc, 32 * 16
+	;call mem_CopyVRAM
 
-	ld hl, test_room_0
-	ld de, _SCRN0
-	ld bc, 32 * 18
-	call mem_CopyVRAM
+	ld hl, dungeon_0
+	call dungeon_LoadDungeon
 
 	call InitSpriteRAM
 	call MoveOAMFuncToHRAM
@@ -119,6 +117,7 @@ VBlank:
 INCLUDE "sprite_functions.asm"
 INCLUDE "player.asm"
 INCLUDE "joypad.asm"
+INCLUDE "dungeon.asm"
 
 SECTION "Sprite RAM", WRAM0[$C0A2]
 player:
@@ -140,10 +139,12 @@ joypad:
 	ds 1
 joypad_prev:
 	ds 1
+
 frame_counter:
 	ds 1
 frame_index:
 	ds 1
+
 update_sprite_x:
 	ds 1
 update_sprite_y:
@@ -161,8 +162,22 @@ update_sprite_left_tile:
 update_sprite_right_tile:
 	ds 1
 
+current_dungeon:
+	ds 2
+current_room:
+	ds 1
+current_collision:
+	ds 2
+
 SECTION "Asset Data", HOME[$4000]
 INCLUDE "animations.asm"
 INCLUDE "characters.z80"
 INCLUDE "dungeon_tiles.z80"
-INCLUDE "test_room_0.z80"
+INCLUDE "dungeon_0.asm"
+INCLUDE "dungeon_0_room_0.z80"
+INCLUDE "dungeon_0_room_1.z80"
+INCLUDE "dungeon_0_room_2.z80"
+INCLUDE "dungeon_0_room_3.z80"
+INCLUDE "dungeon_0_room_4.z80"
+INCLUDE "dungeon_0_room_5.z80"
+INCLUDE "dungeon_0_room_6.z80"
