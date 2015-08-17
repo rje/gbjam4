@@ -1,19 +1,22 @@
 
 InitPlayer:
-	ld a, 88
-	ld [player_x], a
-	ld a, 100
-	ld [player_y], a
-	ld a, $00
-	ld [player_left_sprite], a
-	ld a, $04
-	ld [player_right_sprite], a
-	ld a, DIR_SOUTH
-	ld [player_direction], a
+	ld8i player_x, 88
+	ld8i player_y, 100
+	ld8i player_left_sprite, 0
+	ld8i player_right_sprite, 4
+	ld8i player_direction, DIR_SOUTH
 	ld16i player_animation, player_walk
-	ld [hl], e
-	inc hl
-	ld [hl], d
+	ld8i player_current_frame, 0
+	ld8i player_frame_count, 0
+
+	ld8i weapon_x, 30
+	ld8i weapon_y, 30
+	ld8i weapon_left_sprite, 8
+	ld8i weapon_right_sprite, 12
+	ld8i weapon_direction, DIR_SOUTH
+	ld16i weapon_animation, weapon_swing
+	ld8i weapon_current_frame, 0
+	ld8i weapon_frame_count, 0
 	ret
 
 ; b - x pos
@@ -49,11 +52,14 @@ CalculateTileAddr:
 	ret
 
 HandlePlayerMovement:
+	ld a, [player_direction]
+	ld d, a
 	ld a, [joypad]
 	ld b, PADF_LEFT
 	and b
 	jr z,.noleft
 	ld8i player_direction, DIR_WEST
+	ld8i weapon_direction, DIR_WEST
 	ld a, [player_x]
 	dec a
 	sub 12
@@ -76,6 +82,7 @@ HandlePlayerMovement:
 	and b
 	jr z,.noright
 	ld8i player_direction, DIR_EAST
+	ld8i weapon_direction, DIR_EAST
 	ld a, [player_x]
 	inc a
 	sub 4
@@ -98,6 +105,7 @@ HandlePlayerMovement:
 	and b
 	jr z,.noup
 	ld8i player_direction, DIR_NORTH
+	ld8i weapon_direction, DIR_NORTH
 	ld a, [player_x]
 	sub 8
 	ld b, a
@@ -120,6 +128,7 @@ HandlePlayerMovement:
 	and b
 	jr z,.nodown
 	ld8i player_direction, DIR_SOUTH
+	ld8i weapon_direction, DIR_SOUTH
 	ld a, [player_x]
 	sub 8
 	ld b, a
@@ -138,7 +147,20 @@ HandlePlayerMovement:
 	jp .done
 .nodown
 .done
-
+	ld a, [player_direction]
+	cp a, d
+	jp z, .nochange
+	ld8i player_frame_count, 0
+	ld8i player_current_frame, 0
+	ld8i weapon_frame_count, 0
+	ld8i weapon_current_frame, 0
+.nochange
+	ld a, [player_x]
+	add 8
+	ld [weapon_x], a
+	ld a, [player_y]
+	add 8
+	ld [weapon_y], a
 	call player_CheckForTransition
 	ret
 

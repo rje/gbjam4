@@ -51,9 +51,9 @@ FrameUpdate:
 	call ReadJoypad
 	call HandlePlayerMovement
 	ld hl, player
-	push hl
 	call UpdateSprite
-	pop hl
+	ld hl, weapon
+	call UpdateSprite
 	ret
 
 InitSystem:
@@ -69,7 +69,7 @@ InitSystem:
 
 	ld hl, ChractersLabel
 	ld de, _VRAM
-	ld bc, 8 * 4 * 16 ; 8 chars * 4 tiles per char (16x16) * 16 bytes per tile
+	ld bc, 32 * 4 * 16 ; 8 chars * 4 tiles per char (16x16) * 16 bytes per tile
 	call mem_Copy
 
 	;ld hl, dungeon_0_room_2
@@ -114,6 +114,15 @@ VBlank:
 	
 	reti
 
+SPRITE_X EQU 0
+SPRITE_Y EQU 1
+SPRITE_LEFT EQU 2
+SPRITE_RIGHT EQU 3
+SPRITE_DIRECTION EQU 4
+SPRITE_ANIMATION EQU 5
+SPRITE_FRAME_COUNT EQU 7
+SPRITE_CURRENT_FRAME EQU 8
+
 INCLUDE "sprite_functions.asm"
 INCLUDE "player.asm"
 INCLUDE "joypad.asm"
@@ -133,6 +142,28 @@ player_direction:
 	ds 1
 player_animation:
 	ds 2
+player_frame_count:
+	ds 1
+player_current_frame:
+	ds 1
+
+weapon:	
+weapon_x:
+	ds 1
+weapon_y:
+	ds 1
+weapon_left_sprite:
+	ds 1
+weapon_right_sprite:
+	ds 1
+weapon_direction:
+	ds 1
+weapon_animation:
+	ds 2
+weapon_frame_count:
+	ds 1
+weapon_current_frame:
+	ds 1
 
 SECTION "Variable RAM", WRAM0[$C200]
 joypad:
@@ -145,6 +176,8 @@ frame_counter:
 frame_index:
 	ds 1
 
+update_sprite:
+	ds 2
 update_sprite_x:
 	ds 1
 update_sprite_y:
@@ -160,6 +193,10 @@ update_sprite_animation:
 update_sprite_left_tile:
 	ds 1
 update_sprite_right_tile:
+	ds 1
+update_sprite_frame_count:
+	ds 1
+update_sprite_current_frame:
 	ds 1
 
 current_dungeon:
