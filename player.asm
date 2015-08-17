@@ -156,10 +156,10 @@ HandlePlayerMovement:
 	ld8i weapon_current_frame, 0
 .nochange
 	ld a, [player_x]
-	add 8
+	add 10
 	ld [weapon_x], a
 	ld a, [player_y]
-	add 8
+	add 12
 	ld [weapon_y], a
 	call player_CheckForTransition
 	ret

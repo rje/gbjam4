@@ -140,11 +140,11 @@ sprite_UpdateFrame:
 	ld d, a
 	ld16 hl, de
 	ld de, 0
-	ld e, b
-	srl e
-	inc e
+	ld a, b
+	sla a
+	add 2
+	ld e, a
 	add hl, de ; frameptr
-	inc hl
 	ld a, [hl]
 	ld d, a ; count
 	
@@ -152,7 +152,7 @@ sprite_UpdateFrame:
 	inc a
 	ld c, a ; curCount += 1
 	cp d
-	jp nz, .noframeswitch ; if(curCount -= count) {
+	jp nz, .noframeswitch ; if(curCount == count) {
 	inc b ; frame += 1
 	ld c, 0 ; curCount = 0
 .noframeswitch ; }
