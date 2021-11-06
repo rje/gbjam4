@@ -18,7 +18,7 @@ dungeon_0_room_8Width  EQU 20
 dungeon_0_room_8Height EQU 16
 dungeon_0_room_8Bank   EQU 0
 
- SECTION "dungeon_0", HOME
+ SECTION "dungeon_0_room_8", ROM0
 
 dungeon_0_room_8::
 dungeon_0_room_8PLN0::

@@ -7,26 +7,26 @@ DIR_SOUTH EQU 1
 DIR_EAST EQU 2
 DIR_WEST EQU 3
 
-SECTION "OAM Stuff",HOME[$0000]
+SECTION "OAM Stuff", ROM0[$0000]
 INCLUDE "oam.asm"
 
-SECTION	"Vblank",HOME[$0040]
+SECTION	"Vblank",ROM0[$0040]
 	nop
 	jp VBlank
 	
-SECTION	"LCDC",HOME[$0048]
+SECTION	"LCDC",ROM0[$0048]
 	reti
 
-SECTION	"Timer Overflow",HOME[$0050]
+SECTION	"Timer Overflow",ROM0[$0050]
 	reti
 
-SECTION	"Serial",HOME[$0058]
+SECTION	"Serial",ROM0[$0058]
 	reti
 
-SECTION	"Joypad",HOME[$0060]
+SECTION	"Joypad",ROM0[$0060]
 	reti
 	
-SECTION	"Start",HOME[$0100]
+SECTION	"Start",ROM0[$0100]
 	nop
 	jp begin	
 
@@ -52,8 +52,8 @@ FrameUpdate:
 	call HandlePlayerMovement
 	ld hl, player
 	call UpdateSprite
-	ld hl, weapon
-	call UpdateSprite
+	;ld hl, weapon
+	;call UpdateSprite
 	ret
 
 InitSystem:
@@ -206,7 +206,7 @@ current_room:
 current_collision:
 	ds 2
 
-SECTION "Asset Data", HOME[$4000]
+SECTION "Asset Data", ROM0[$4000]
 INCLUDE "animations.asm"
 INCLUDE "characters.z80"
 INCLUDE "dungeon_tiles.z80"
